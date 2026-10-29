@@ -36,10 +36,10 @@
                 <span class="label">JOGADOR:</span>
                 <span class="value" id="hud-player-name">---</span>
             </div>
-            <div class="difficulty-info">
+            <!-- <div class="difficulty-info">
                 <span class="label">NÍVEL:</span>
                 <span class="value" id="difficulty-display"></span>
-            </div>
+            </div> -->
             <div class="score-info">
                 <span class="label">PONTOS:</span>
                 <span class="value" id="score-display">0</span>
@@ -107,7 +107,9 @@
         </button>
 
         <h3 class="infoCharacterPikachu">Habilidade "Choque do Trovão": Dispara um raio nos obstáculos e nos chefes com um cooldown de 5 segundos</h3>
-        <h3 class="infoCharacterMario">Habilidade "Pulo Duplo": Dá um segundo salto, podendo te dar vantagens contra ataques altos e ao pular os obstáculos</h3>
+        <!-- <h3 class="infoCharacterMario">Habilidade "Pulo Duplo": Dá um segundo salto, podendo te dar vantagens contra ataques altos e ao pular os obstáculos</h3> -->
+        <!-- EU COLOQUEI PULO DUPLO, MAS DO ND ELE TRAVOU -->
+        <h3 class="infoCharacterMario">Gordinho Gostoso</h3>
 
         <button type="button" class="btn btn-primary" id="btn-confirmar-personagem">
             CONFIRMAR

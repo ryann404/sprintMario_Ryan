@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const hudPlayerName = document.getElementById('hud-player-name');
     const scoreDisplay = document.getElementById('score-display');
     const jumpTip = document.getElementById('jump-tip');
-    const difficulty = document.getElementById('difficulty-display');
 
     const loja = document.getElementById('loja');
     const lojaMoedas = document.getElementById('loja-moedas');
@@ -123,8 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let scoreLoop = null;
 
 
-    const difficultyDisplay = document.getElementById('difficulty-display');
-    
+
 
     // Recupera último nome utilizado caso exista
     const savedName = localStorage.getItem('mario_jump_player');
@@ -136,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
      * Inicia uma nova rodada
      */
 function startGame() {
-    difficulty.textContent = 'Fácil'
     moedas = 0;
     coinsDisplay.textContent = '0';
     
@@ -220,36 +217,19 @@ function startGame() {
     if (jumpTip) jumpTip.style.opacity = '0';
 
     // Pikachu: um pulo só
-    if (personagemAtual !== 'mario') {
-        if (personagem.classList.contains('jump')) return;
-        personagem.classList.add('jump');
-        return;
+    if (personagem.classList.contains('jump')) return;
+    personagem.classList.add('jump');
+    return;
     }
 
     // Mario: no máximo 2 pulos
     if (pulosFeitos >= 2) return;
     pulosFeitos += 1;
 
-    if (pulosFeitos === 1) {
-        personagem.classList.add('jump');
-    } else {
-        // Segundo pulo: remove o pulo simples e dispara a animação de pulo duplo
-        personagem.classList.remove('jump');
-        void personagem.offsetWidth; // Força o reflow para reiniciar a animação
-        personagem.classList.add('jump-duplo');
-        personagem.src = 'assets/saltoDuploMario.png';
-    }
-}   
 personagem.addEventListener('animationend', (e) => {
     if (e.animationName === 'jump-animation') {
         personagem.classList.remove('jump');
-        pulosFeitos = 0;
-    } else if (e.animationName === 'jump-duplo-animation') {
-        if (!isPlaying) return;
-        personagem.classList.remove('jump-duplo');
-        personagem.src = imagemPersonagem;
-        pulosFeitos = 0;
-    }
+    } 
 });
 
     // O fim do pulo é detectado pela própria animação (nada de timers que desencontram)
