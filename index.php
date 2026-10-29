@@ -38,7 +38,7 @@
             </div>
             <div class="difficulty-info">
                 <span class="label">NÍVEL:</span>
-                <span class="value" id="difficulty-display">Fácil</span>
+                <span class="value" id="difficulty-display"></span>
             </div>
             <div class="score-info">
                 <span class="label">PONTOS:</span>
@@ -47,6 +47,10 @@
             <div class="coins-info">
                 <span class="label">MOEDAS:</span>
                 <span class="value" id="coins-display">0</span>
+            </div>
+            <div class="lives-info">
+                <span class="label">VIDAS:</span>
+                <span class="value" id="lives-display">1</span>
             </div>
         </header>
 
@@ -59,6 +63,26 @@
                 id="obstaculo"
                 alt="Obstáculo">
             <div class="moeda" id="moeda"></div>
+            
+            <img src="assets/boss.png" class="boss" id="boss" alt="Boss">
+            <img src="assets/ataqueBoss.png" class="ataque-boss" id="ataque-boss" alt="Ataque do Boss">
+            <div class="item-boss" id="item-boss"></div>
+            <span class="boss-vida" id="boss-vida"></span>
+            <h1 class="mensagemBoss" id="mensagemBoss">O BOSS APARECEU!</h1>
+            <span class="detalheBoss" id="detalheBoss">Colete os orbes azuis para derrotá-lo!</span>
+            
+
+            <div class="barra-cooldown" id="barra-cooldown">
+            <div class="barra-cooldown-fill" id="barra-cooldown-fill"></div>
+            </div>
+            <img src="assets/raioSkillPikachu.gif" class="raio-skill" id="raio-skill" alt="Raio">
+
+            <img src="assets/marioStar.png" class="powerup" id="powerup" alt="Power-up">
+
+            <div class="barra-poder" id="barra-poder">
+                <div class="barra-poder-fill" id="barra-poder-fill"></div>
+            </div>
+            
             <span class="jump-tip" id="jump-tip">Pressione ESPAÇO ou clique para pular</span>
         </main>
     </div>
@@ -79,10 +103,34 @@
             <p>Mario</p>
         </button>
 
+        <h3 class="infoCharacterPikachu">Habilidade "Choque do Trovão": Dispara um raio nos obstáculos e nos chefes com um cooldown de 5 segundos</h3>
+        <h3 class="infoCharacterMario">Habilidade "Pulo Duplo": Dá um segundo salto, podendo te dar vantagens contra ataques altos e ao pular os obstáculos</h3>
+
         <button type="button" id="btn-confirmar-personagem">
             CONFIRMAR
         </button>
 
+    </div>
+
+    <div class="select-caracter" id="loja">
+        <h1 class="select-title">Loja de melhorias</h1>
+        <p>Suas moedas: <span id="loja-moedas">0</span></p>
+
+        <button type="button" class="btnSelect" id="btn-comprar-moeda">
+            Moedas 1.5x mais - <span id="preco-moeda">30 moedas (0/3)</span>
+        </button>
+
+        <button type="button" class="btnSelect" id="btn-comprar-pulo">
+            Pulo 1.2x mais alto - <span id="preco-pulo">30 moedas (0/3)</span>
+        </button>
+
+        <button type="button" class="btnSelect" id="btn-comprar-vida">
+            ❤️ +1 coração de vida - <span id="preco-vida">30 moedas (0/3)</span>
+        </button>
+
+
+
+        <button type="button" class="btn btn-primary" id="btn-jogar-loja">JOGAR</button>
     </div>
 
     <div class="modal-overlay active" id="start-modal">
@@ -121,7 +169,7 @@
         </div>
     </div>
 
-    <!-- 2. TELA DE GAME OVER & RANKING -->
+    <!--  TELA DE GAME OVER & RANKING -->
     <div class="modal-overlay" id="gameover-modal">
         <div class="modal-card gameover-card">
             <div class="modal-header">

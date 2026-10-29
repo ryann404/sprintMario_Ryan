@@ -88,8 +88,8 @@ body {
     animation: obstaculo-animation infinite linear;
     bottom: 0;
     height: 130px;
-    width: 90px;           
-    object-fit: contain;    
+    /* width: 90px;            */
+    /* object-fit: contain;     */
     right: -80px;
 }
 
@@ -131,8 +131,8 @@ body {
 }
 
 .jump {
-    animation: jump-animation 700ms ease-out;
-}
+    animation: jump-animation calc(800ms * var(--pulo, 1)) ease-out;
+}   
 
 @keyframes obstaculo-animation {
     from {
@@ -148,16 +148,11 @@ body {
         bottom: 0;
     }
     30% {
-        bottom: 180px;
+        bottom: calc(180px * var(--pulo, 1));
     }
-    50% {
-        bottom: 180px;
-    }
-    60% {
-        bottom: 130px;
-    }
-    80%{
-        bottom: 60px;
+    55% {
+        bottom: calc(180px * var(--pulo, 1));
+        /* animation-timing-function: ease-in-out; descida suave */
     }
     100% {
         bottom: 0;
@@ -203,7 +198,7 @@ body {
     margin-left: 80px;
     margin-right: 80px;
     height: 80%;
-    box-shadow: 0 0 30px rgba(229, 37, 33, 0.4), 0 15px 40px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 30px rgba(0, 76, 255, 0.4), 0 15px 40px rgba(0, 0, 0, 0.7);
 }
 
 .modal-header {
@@ -259,7 +254,7 @@ body {
 }
 
 .input-group input:focus {
-    border-color: #ffcc00;
+    border-color: #00ddff;
     box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
 }
 
@@ -284,15 +279,16 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(180deg, #e52521 0%, #b81410 100%);
+    background: linear-gradient(180deg, #00b1fd 0%, #1056b8 100%);
     color: #ffffff;
-    border-bottom: 4px solid #7a0b08;
+    /* border-bottom: 4px solid #7a0b08; */
 }
 
 .btn-primary:hover {
-    background: linear-gradient(180deg, #ff3833 0%, #cf1915 100%);
+    background: #00cae5;
+    transition: 0.5s ease-out;
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(229, 37, 33, 0.4);
+    box-shadow: 0 6px 15px rgb(0, 200, 193);
 }
 
 .btn-primary:active {
@@ -466,33 +462,7 @@ body {
 }
 
 /* Responsividade */
-@media (max-width: 600px) {
-    .game-board {
-        height: 380px;
-    }
-    .mario {
-        width: 100px;
-    }
-    .obstaculo {
-        width: 60px;
-    }
-    .hud-bar {
-        padding: 10px 14px;
-    }
-    .label {
-        font-size: 9px;
-    }
-    .value {
-        font-size: 11px;
-    }
-    .game-title {
-        font-size: 16px;
-    }
-    .btn {
-        font-size: 10px;
-        padding: 12px 14px;
-    }
-}
+
 .character-select {
     margin: 20px 0;
 }
@@ -538,7 +508,7 @@ body {
     border-color: #ffcc00;
 }
 
-.character-option.selected {
+.character-option.selected{
     border-color: #ffcc00;
     background: #30354b;
     box-shadow: 0 0 12px #ffcc0066;
@@ -593,9 +563,26 @@ body {
     transform: scale(0.95);
     border-color: #ffffff;
 }
-.btnSelect.selecionado {
+.infoCharacterPikachu{
+    opacity: 0;
+}
+.infoCharacterMario{
+    opacity: 0;
+}
+#btn-pikachu.selecionado{
     border-color: #ffcc00;
     box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
+    .infoCharacterPikachu{
+        opacity: 1;
+    }
+}
+#btn-mario.selecionado{
+    border-color: #ff2600;
+    box-shadow: 0 0 15px rgba(255, 72, 0, 0.6);
+    .infoCharacterMario{
+        opacity: 1;
+    };
+/* } */
 }
 .btnSelect img {
     width: 60px;
@@ -645,5 +632,198 @@ body {
 
 .game-board.running .moeda {
     display: block;
+    bottom: 0;
     animation: obstaculo-animation 1.6s infinite linear;
+}
+/* BOSS */
+.boss {
+    display: none;
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    height: 250px;
+    z-index: 8;
+}
+
+.boss.boss-dano {
+    opacity: 0.4;
+}
+
+.ataque-boss {
+    display: none;
+    position: absolute;
+    right: -80px;
+    bottom: 0;
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    z-index: 9;
+}
+
+.ataque-boss.lancado {
+    animation: obstaculo-animation 2s linear;
+}
+
+.item-boss {
+    display: none;
+    position: absolute;
+    right: -80px;
+    bottom: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #c8f7ff, #00b3ff 60%, #0077aa);
+    border: 3px solid #005f88;
+    box-shadow: 0 0 10px rgba(0, 179, 255, 0.8);
+    z-index: 5;
+}
+
+.item-boss.lancado {
+    animation: obstaculo-animation 2.5s linear;
+}
+
+.boss-vida {
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    color: #e52521;
+    text-shadow: 2px 2px #000;
+    z-index: 20;
+}
+.boss.boss-derrotado {
+    opacity: 0;
+    transition: opacity 2s linear;
+}
+
+.jump-duplo {
+    animation: jump-duplo-animation 1000ms ease-out;
+}
+
+@keyframes jump-duplo-animation {
+    35%  { bottom: calc(280px * var(--pulo, 1)); }
+    55%  { bottom: calc(280px * var(--pulo, 1)); animation-timing-function: ease-in-out}
+    100% { bottom: 0; }
+}
+/* SKILL DO PIKACHU */
+.barra-cooldown {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+    height: 14px;
+    background: #121524;
+    border: 2px solid #ffcc00;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 20;
+}
+
+.barra-cooldown-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #fff3a0, #ffcc00);
+}
+
+.raio-skill {
+    display: none;
+    position: absolute;
+    top: 0;
+    width: 90px;
+    height: 100%;
+    object-fit: contain;
+    z-index: 15;
+    pointer-events: none;
+}
+.btnSelect:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+/* botao desativado */
+
+
+
+/* Raio caindo do céu */
+.raio-skill.raio-caindo {
+    animation: raio-cai 0.5s ease-in forwards;
+}
+
+@keyframes raio-cai {
+    from { transform: translateY(-100%); }
+    to   { transform: translateY(0); }
+}
+
+/* Raio e cano somem aos poucos (0.3s) */
+.raio-skill.raio-sumindo {
+    opacity: 0;
+    transition: opacity 0.3s linear;
+}
+
+.obstaculo.sumindo {
+    opacity: 0;
+    transition: opacity 0.3s linear;
+}
+/* POWER-UPS */
+.powerup {
+    display: none;
+    position: absolute;
+    right: -80px;
+    bottom: 20px;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    z-index: 6;
+}
+.powerup.selected{
+    border-color: #ffcc00;
+    background: #30354b;
+    box-shadow: 0 0 12px #ffcc0066;
+}
+.powerup.lancado {
+    animation: obstaculo-animation 2.5s linear;
+}
+
+/* Mario com a estrela */
+.personagem-estrela {
+    filter: drop-shadow(0 0 12px #ffcc00) brightness(1.3);
+}
+
+/* Pikachu com a pimenta (mais avermelhado) */
+.personagem.personagem-pimenta {
+    filter: hue-rotate(-45deg) saturate(1.8);
+}
+
+/* Barra de duração do power-up (topo, lado direito) */
+.barra-poder {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 200px;
+    height: 14px;
+    background: #121524;
+    border: 2px solid #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 20;
+}
+
+.barra-poder-fill {
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes poder-acaba {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
+.mensagemBoss{
+    opacity: 0%;
+    top: 30%;
+    text-align: center;
+    font-size: 40px;
+
 }
