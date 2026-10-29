@@ -56,6 +56,9 @@
 
         
         <main class="game-board" id="game-board">
+            <div class="camada montanha-fundo"  id="montanha1"></div>
+            <div class="camada montanha-frente" id="montanha2"></div>
+            <div class="camada chao" id="chao"></div>
             <img src="assets/clouds.png" class="clouds" alt="Nuvens">
             <img src="assets\Running-Pikachu-GIF.webp" class="personagem" alt="pikachu">
             <img src="assets/pedra.png"
@@ -75,7 +78,7 @@
             <div class="barra-cooldown" id="barra-cooldown">
             <div class="barra-cooldown-fill" id="barra-cooldown-fill"></div>
             </div>
-            <img src="assets/raioSkillPikachu.gif" class="raio-skill" id="raio-skill" alt="Raio">
+            <img src="assets/raioSkillPikachu.png" class="raio-skill" id="raio-skill" alt="Raio">
 
             <img src="assets/marioStar.png" class="powerup" id="powerup" alt="Power-up">
 
@@ -106,7 +109,7 @@
         <h3 class="infoCharacterPikachu">Habilidade "Choque do Trovão": Dispara um raio nos obstáculos e nos chefes com um cooldown de 5 segundos</h3>
         <h3 class="infoCharacterMario">Habilidade "Pulo Duplo": Dá um segundo salto, podendo te dar vantagens contra ataques altos e ao pular os obstáculos</h3>
 
-        <button type="button" id="btn-confirmar-personagem">
+        <button type="button" class="btn btn-primary" id="btn-confirmar-personagem">
             CONFIRMAR
         </button>
 

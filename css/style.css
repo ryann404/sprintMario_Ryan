@@ -72,8 +72,7 @@ body {
     height: 480px;
     border-left: 4px solid #333;
     border-right: 4px solid #333;
-    border-bottom: 20px solid rgb(35, 160, 35);
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 12px 12px;   
     margin: 0 auto;
     position: relative;
     overflow: hidden;
@@ -82,11 +81,52 @@ body {
     cursor: pointer;
 }
 
+/* ===== CENÁRIO EM CAMADAS ===== */
+/* Cada camada tem 200% da largura: são duas "telas" lado a lado.
+   Mover -50% = exatamente uma tela, então o loop é perfeito. */
+.camada {
+    position: absolute;
+    left: 0;
+    width: 200%;
+    background-repeat: repeat-x;
+    background-size: calc(100% / (var(--n, 1) * 2)) 100%;
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* .montanha-fundo {                 
+    height: 600px;
+    background-image: url('../assets/montanha1.png');
+    --n: 1;
+}
+
+*/
+.chao {               
+    position: absolute;            
+    bottom: 0;
+    height: 700px;
+    background-image: url('../assets/chao.png');
+    --n: 4;
+}
+/*
+@keyframes camada-esquerda {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+@keyframes camada-direita {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
+}
+
+.game-board.running .montanha-fundo  { animation: camada-direita  120s linear infinite; }
+.game-board.running .montanha-frente { animation: camada-esquerda  25s linear infinite; }
+.game-board.running .chao            { animation: camada-esquerda var(--vel-chao, 2s) linear infinite; } */
+
 /* Elementos do Jogo */
 .obstaculo {
     position: absolute;
     animation: obstaculo-animation infinite linear;
-    bottom: 0;
+    bottom: 23px;
     height: 130px;
     /* width: 90px;            */
     /* object-fit: contain;     */
@@ -96,7 +136,7 @@ body {
 .personagem {
     width: 150px;
     position: absolute;
-    bottom: 0;
+    padding-bottom: 23px;
     left: 20px;
     z-index: 10;
 }
@@ -131,8 +171,19 @@ body {
 }
 
 .jump {
-    animation: jump-animation calc(800ms * var(--pulo, 1)) ease-out;
-}   
+    animation: jump-animation var(--tempo-pulo, 650ms) ease-out;
+}
+.jump-duplo {
+    animation: jump-duplo-animation var(--tempo-pulo-duplo, 850ms) ease-out;
+}
+
+@keyframes jump-animation {
+    0%   { bottom: 0; }
+    40%  { bottom: min(calc(180px * var(--pulo, 1)), 280px); }   /* sobe desacelerando */
+    55%  { bottom: min(calc(180px * var(--pulo, 1)), 280px);     /* pairo rápido no topo */
+           animation-timing-function: ease-in; }                  /* desce acelerando */
+    100% { bottom: 0; }
+}
 
 @keyframes obstaculo-animation {
     from {
@@ -143,7 +194,7 @@ body {
     }
 }
 
-@keyframes jump-animation {
+/* @keyframes jump-animation {
     0% {
         bottom: 0;
     }
@@ -152,12 +203,12 @@ body {
     }
     55% {
         bottom: calc(180px * var(--pulo, 1));
-        /* animation-timing-function: ease-in-out; descida suave */
+        animation-timing-function: ease-in-out; descida suave
     }
     100% {
         bottom: 0;
     }
-}
+}  */
 
 @keyframes clouds-animation {
     from {
@@ -563,26 +614,38 @@ body {
     transform: scale(0.95);
     border-color: #ffffff;
 }
-.infoCharacterPikachu{
-    opacity: 0;
-}
-.infoCharacterMario{
-    opacity: 0;
-}
-#btn-pikachu.selecionado{
+/* destaque do botão selecionado */
+#btn-pikachu.selecionado {
     border-color: #ffcc00;
     box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
-    .infoCharacterPikachu{
-        opacity: 1;
-    }
 }
-#btn-mario.selecionado{
+#btn-mario.selecionado {
     border-color: #ff2600;
     box-shadow: 0 0 15px rgba(255, 72, 0, 0.6);
-    .infoCharacterMario{
-        opacity: 1;
-    };
-/* } */
+}
+
+/* descrições: escondidas por padrão */
+.infoCharacterPikachu,
+.infoCharacterMario {
+    display: none;
+    max-width: 520px;
+    padding: 0 20px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* aparece só a do personagem selecionado */
+.select-caracter:has(#btn-pikachu.selecionado) .infoCharacterPikachu {
+    display: block;
+    color: #ffcc00;
+    animation: fadeIn 0.3s ease;
+}
+.select-caracter:has(#btn-mario.selecionado) .infoCharacterMario {
+    display: block;
+    color: #ff6a4d;
+    animation: fadeIn 0.3s ease;
 }
 .btnSelect img {
     width: 60px;
@@ -699,13 +762,15 @@ body {
     transition: opacity 2s linear;
 }
 
-.jump-duplo {
-    animation: jump-duplo-animation 1000ms ease-out;
+.jump {
+    animation: jump-animation var(--tempo-pulo, 650ms) ease-out;
 }
 
-@keyframes jump-duplo-animation {
-    35%  { bottom: calc(280px * var(--pulo, 1)); }
-    55%  { bottom: calc(280px * var(--pulo, 1)); animation-timing-function: ease-in-out}
+@keyframes jump-animation {
+    0%   { bottom: 0; }
+    40%  { bottom: min(calc(180px * var(--pulo, 1)), 280px); }   /* sobe desacelerando */
+    55%  { bottom: min(calc(180px * var(--pulo, 1)), 280px);     /* pairo rápido no topo */
+           animation-timing-function: ease-in; }                  /* desce acelerando */
     100% { bottom: 0; }
 }
 /* SKILL DO PIKACHU */
@@ -820,10 +885,57 @@ body {
     from { width: 100%; }
     to   { width: 0%; }
 }
-.mensagemBoss{
-    opacity: 0%;
-    top: 30%;
+/* ===== MENSAGENS DO BOSS ===== */
+.mensagemBoss,
+.detalheBoss {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
     text-align: center;
-    font-size: 40px;
+    font-family: 'Press Start 2P', cursive;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 30;
+}
 
+.mensagemBoss {
+    top: 25%;
+    font-size: 36px;
+    color: #e52521;
+    text-shadow: 4px 4px 0 #000, 0 0 18px rgba(229, 37, 33, 0.8);
+    animation: pulsar-boss 0.6s ease-in-out infinite alternate;
+}
+
+.detalheBoss {
+    top: calc(25% + 70px);
+    font-size: 13px;
+    line-height: 1.7;
+    color: #7fdcff;
+    text-shadow: 2px 2px 0 #000;
+}
+
+@keyframes pulsar-boss {
+    from { transform: translateX(-50%) scale(1); }
+    to   { transform: translateX(-50%) scale(1.06); }
+}
+
+/* vida do boss: caixinha legível em qualquer fundo */
+.boss-vida {
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 13px;
+    white-space: nowrap;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 3px solid #e52521;
+    border-radius: 8px;
+    text-shadow: 2px 2px #000;
+    z-index: 20;
 }

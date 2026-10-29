@@ -86,7 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const barraCooldownFill = document.getElementById('barra-cooldown-fill');
 
     let ultimoRaio = 0;            // hora do último disparo
-    const cooldownRaio = 5000;     // 5 segundos
+    const cooldownBase = 5000;
+    let cooldownRaio = cooldownBase;   // a pimenta muda este valor
+
+    // POWER-UPS
+    const powerup = document.getElementById('powerup');
+    const barraPoder = document.getElementById('barra-poder');
+    const barraPoderFill = document.getElementById('barra-poder-fill');
+    let powerupNaTela = false;
+    let powerupAtivo = false;
+    let invulneravel = false;
+    let timerPowerup = null;   // sorteia quando o item aparece
+    let timerPoderFim = null;  // encerra o efeito    // 5 segundos
     let obstaculoDestruido = false;
 
 
@@ -133,8 +144,11 @@ function startGame() {
     vidas = 1 + nivelVida;
     livesDisplay.textContent = '❤️ ' + vidas;
     multiplicadorMoeda = 1.5 ** nivelMoeda;
-    personagem.style.setProperty('--pulo', 1.2 ** nivelPulo);
-    // criou uma var pra intercalar o js e o css
+    const alturaPulo = 1.2 ** nivelPulo;
+    const tempoPulo = Math.round(650 * Math.sqrt(alturaPulo)); // mais alto = um pouco mais de tempo no ar
+    personagem.style.setProperty('--pulo', alturaPulo);
+    personagem.style.setProperty('--tempo-pulo', tempoPulo + 'ms');
+    personagem.style.setProperty('--tempo-pulo-duplo', Math.round(tempoPulo * 1.35) + 'ms');
     
     clearInterval(gameLoop);
     clearInterval(scoreLoop);
@@ -153,6 +167,11 @@ function startGame() {
     bossFeitos = 0;
     proximoBoss = 100;
     atualizarCenario();
+    
+    clearTimeout(timerPowerup);
+    esconderPowerup();
+    encerrarPowerup();
+    agendarPowerup();
 
     scoreDisplay.textContent = '0';
     hudPlayerName.textContent = currentPlayer || 'Jogador';
@@ -198,18 +217,12 @@ function startGame() {
 
     function jump() {
     if (!isPlaying) return;
+    if (jumpTip) jumpTip.style.opacity = '0';
 
-    if (jumpTip) {
-        jumpTip.style.opacity = '0';
-    }
-
-    // Pikachu: um pulo só, igual era antes
+    // Pikachu: um pulo só
     if (personagemAtual !== 'mario') {
         if (personagem.classList.contains('jump')) return;
         personagem.classList.add('jump');
-        setTimeout(() => {
-            personagem.classList.remove('jump');
-        }, 500);
         return;
     }
 
@@ -219,33 +232,44 @@ function startGame() {
 
     if (pulosFeitos === 1) {
         personagem.classList.add('jump');
-        timerPulo = setTimeout(() => {
-            personagem.classList.remove('jump');
-            pulosFeitos = 0;
-        }, 500);
     } else {
-        // segundo pulo: cancela o fim do primeiro e continua da altura atual
-        clearTimeout(timerPulo);
-        const alturaAtual = +window.getComputedStyle(personagem).bottom.replace('px', '');
-        personagem.style.bottom = `${alturaAtual}px`;
+        // Segundo pulo: remove o pulo simples e dispara a animação de pulo duplo
         personagem.classList.remove('jump');
-        void personagem.offsetWidth;
+        void personagem.offsetWidth; // Força o reflow para reiniciar a animação
         personagem.classList.add('jump-duplo');
         personagem.src = 'assets/saltoDuploMario.png';
-
-        timerPulo = setTimeout(() => {
-            if (!isPlaying) return; // morreu no meio do pulo: não mexe no sprite de morte
-            personagem.classList.remove('jump-duplo');
-            personagem.style.bottom = '0px';
-            personagem.src = imagemPersonagem; // volta pro sprite normal
-            pulosFeitos = 0;
-        }, 780);
     }
-}
+}   
+personagem.addEventListener('animationend', (e) => {
+    if (e.animationName === 'jump-animation') {
+        personagem.classList.remove('jump');
+        pulosFeitos = 0;
+    } else if (e.animationName === 'jump-duplo-animation') {
+        if (!isPlaying) return;
+        personagem.classList.remove('jump-duplo');
+        personagem.src = imagemPersonagem;
+        pulosFeitos = 0;
+    }
+});
+
+    // O fim do pulo é detectado pela própria animação (nada de timers que desencontram)
+    // personagem.addEventListener('animationend', (e) => {
+    //     if (e.animationName === 'jump-animation') {
+    //         personagem.classList.remove('jump');
+    //         pulosFeitos = 0;
+    //     } else if (e.animationName === 'jump-duplo-animation') {
+    //         if (!isPlaying) return; // morreu no pulo: não mexe no sprite de morte
+    //         personagem.classList.remove('jump-duplo');
+    //         personagem.style.bottom = '0px';
+    //         personagem.src = imagemPersonagem;
+    //         pulosFeitos = 0;
+    //     }
+    // });
 
     function checkCollision() {
         if (!isPlaying) return;
         atualizarBarraCooldown();
+        checarPowerup();
         if (bossAtivo) {
         checarItem();
         checarMoeda();
@@ -267,7 +291,7 @@ function startGame() {
         const pipePosition = obstaculo.offsetLeft;
         const marioPosition = +window.getComputedStyle(personagem).bottom.replace('px', '');
 
-        if (pipePosition <= 120 && pipePosition > 0 && marioPosition < 80 && !obstaculoDestruido) {
+        if (pipePosition <= 120 && pipePosition > 0 && marioPosition < 80 && !obstaculoDestruido && !invulneravel) {
             personagem.style.opacity = '0.4';
             setTimeout(() => {personagem.style.opacity = '1';}, 300)
             perderVida(pipePosition, marioPosition);
@@ -276,6 +300,7 @@ function startGame() {
         checarMoeda()
     }
     function perderVida(pos, altura) {
+        if (invulneravel) return;
         vidas -= 1;
         livesDisplay.textContent = vidas;
         personagem.style.opacity = '0.4';
@@ -297,6 +322,10 @@ function startGame() {
         bossAtivo = false;
 
         isPlaying = false;
+
+        clearTimeout(timerPowerup);
+        esconderPowerup();
+        encerrarPowerup();
 
         moedas = Math.floor(moedas);
         moedasTotal += moedas;
@@ -581,17 +610,11 @@ function startGame() {
     function reiniciarObstaculo() {
         obstaculoDestruido = false;
         obstaculo.style.visibility = 'visible';
-        // cria uma cópia nova e troca no lugar do cano antigo
-        const novo = obstaculo.cloneNode(true);
-        novo.style.animation = '';
-        novo.style.left = '';
-        novo.style.animationDuration = `${velocidadeObstaculo}s`;
-        obstaculo.replaceWith(novo);
-        obstaculo = novo;
-
-        // pequena folga: ignora colisão por 300ms depois do reinício
+        obstaculo.style.animation = 'none';
+        void obstaculo.offsetWidth;
+        obstaculo.style.animation = '';
+        obstaculo.style.animationDuration = `${velocidadeObstaculo}s`;
         ignorarColisaoAte = Date.now() + 300;
-
         reiniciarMoeda();
     }
     function sortearMoeda() {
@@ -644,6 +667,8 @@ function checarMoeda() {
         bossMorrendo = false;
         bossVida = 3;
 
+        esconderPowerup(); // se um power-up estiver na tela, ele some (o efeito já ativo continua)
+
         // cada boss é mais difícil que o anterior
         if (bossFeitos === 0) {          // entre o Fácil e o Médio
             duracaoAtaque = 1.75;
@@ -680,7 +705,7 @@ function checarMoeda() {
         setTimeout(() => {
             mensagemBoss.style.opacity = '0';
             detalheBoss.style.opacity = '0';
-        }, 500)
+        }, 2200)
 
         timerBoss = setTimeout(prepararAtaque, 1000);
         timerItem = setTimeout(lancarItem, 3000);
@@ -774,7 +799,7 @@ function checarMoeda() {
 
     function danoBoss() {
         bossVida -= 1;
-        bossVidaDisplay.textContent = 'BOSS: ' + bossVida;
+        bossVidaDisplay.textContent = 'BOSS: ' + '❤️'.repeat(bossVida);
 
         boss.classList.add('boss-dano');
         setTimeout(() => {
@@ -888,6 +913,90 @@ function checarMoeda() {
             obstaculo.style.visibility = 'hidden';
             obstaculoDestruido = true;
         }
+    }
+        // ===== POWER-UPS =====
+    function agendarPowerup() {
+        clearTimeout(timerPowerup);
+        timerPowerup = setTimeout(lancarPowerup, 8000 + Math.random() * 7000); // 8 a 15s
+    }
+
+    function lancarPowerup() {
+        if (!isPlaying) return;
+        if (bossAtivo || powerupAtivo) { agendarPowerup(); return; } // não aparece no boss nem com poder ativo
+
+        powerup.src = personagemAtual === 'mario' ? 'assets/marioStar.png' : 'assets/pimenta.png';
+        powerup.style.bottom = `${alturasMoeda[Math.floor(Math.random() * alturasMoeda.length)]}px`;
+        powerup.style.display = 'block';
+        powerupNaTela = true;
+
+        powerup.classList.remove('lancado');
+        void powerup.offsetWidth;          // reinicia a animação
+        powerup.classList.add('lancado');
+    }
+
+    function esconderPowerup() {
+        powerup.classList.remove('lancado');
+        powerup.style.display = 'none';
+        powerupNaTela = false;
+    }
+
+    // passou da tela sem ser pego
+    powerup.addEventListener('animationend', () => {
+        esconderPowerup();
+        if (isPlaying) agendarPowerup();
+    });
+
+    function checarPowerup() {
+        if (!powerupNaTela) return;
+        const w = powerup.getBoundingClientRect();
+        const p = personagem.getBoundingClientRect();
+
+        const tocou =
+            w.right > p.left + 30 &&
+            w.left < p.right - 30 &&
+            w.bottom > p.top + 20 &&
+            w.top < p.bottom - 10;
+
+        if (tocou) {
+            esconderPowerup();
+            ativarPowerup();
+        }
+    }
+
+    function ativarPowerup() {
+        clearTimeout(timerPoderFim);
+        const mario = personagemAtual === 'mario';
+        const duracao = mario ? 5000 : 15000;
+
+        if (mario) {
+            invulneravel = true;
+            personagem.classList.add('personagem-estrela');
+        } else {
+            cooldownRaio = cooldownBase / 2;   // cooldown cai pela metade (2,5s)
+            personagem.classList.add('personagem-pimenta');
+        }
+        powerupAtivo = true;
+
+        // barra: some sozinha quando acaba
+        barraPoderFill.style.background = mario
+            ? 'linear-gradient(180deg, #fff3a0, #ffcc00)'
+            : 'linear-gradient(180deg, #ff8a80, #e53935)';
+        barraPoder.style.display = 'block';
+        barraPoderFill.style.animation = 'none';
+        void barraPoderFill.offsetWidth;
+        barraPoderFill.style.animation = `poder-acaba ${duracao}ms linear forwards`;
+
+        timerPoderFim = setTimeout(encerrarPowerup, duracao);
+    }
+
+    function encerrarPowerup() {
+        clearTimeout(timerPoderFim);
+        invulneravel = false;
+        powerupAtivo = false;
+        cooldownRaio = cooldownBase;
+        personagem.classList.remove('personagem-estrela', 'personagem-pimenta');
+        barraPoder.style.display = 'none';
+        barraPoderFill.style.animation = 'none';
     }
 
     // Sorteia nova altura toda vez que a moeda reaparece na direita
